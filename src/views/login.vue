@@ -1,6 +1,6 @@
 <template>
-    <div>
-      <div class="login-wrap">
+    <div class="login-wrap">
+      <div>
         <el-form class="login-form" label-position="top" label-width="80px" :model="formData">
             <el-form-item label="用户名">
                <el-input v-model="formData.username"></el-input>
@@ -9,7 +9,7 @@
                 <el-input v-model="formData.password"></el-input>
             </el-form-item>
             <el-form-item>
-              <el-button class="btn" type="primary">登录</el-button>
+              <el-button @click="handleLogin" class="btn" type="primary">登录</el-button>
              </el-form-item>
         </el-form>
       </div>
@@ -17,6 +17,7 @@
 </template>
 
 <script>
+import axios from 'axios';
 export default {
   data() {
     return {
@@ -25,11 +26,40 @@ export default {
         password: ''
       }
     };
+  },
+  methods: {
+    handleLogin() {
+      // 使用async函数和变量赋值
+      axios
+        .post('http://localhost:8888/api/private/v1/login', this.formData)
+        .then((response) => {
+          console.log(response);
+          var status = response.data.meta.status;
+          var msg = response.data.meta.msg;
+          console.log(status);
+          if (status === 200) {
+            // 成功
+            // 提示
+            this.$message.success(msg);
+            // 获取token，存储到本地
+            var token = response.data.data.token;
+            sessionStorage.setItem('token',token);
+            // console.log(token);
+            // 跳转,新建home组件，配置路由
+          } else {
+            // 失败
+            this.$message.error(msg);
+          }
+        })
+        .catch((err) => {
+          console.log(err);
+        });
+    }
   }
 };
 </script>
 
-<style>
+<style scoped>
   .login-wrap {
     background-color: #324152;
     height: 100%;
