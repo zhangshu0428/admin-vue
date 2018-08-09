@@ -6,10 +6,14 @@ import router from './router';
 import ElementUI from 'element-ui';
 import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/css/index.css';
+import moment from 'moment';
 
 Vue.config.productionTip = false;
 Vue.use(ElementUI);
-
+// 创建全局过滤器
+Vue.filter('fmtDate', (value, fmtString) => {
+  return moment(value).format(fmtString);
+});
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
