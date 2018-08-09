@@ -94,6 +94,14 @@
 
 <script>
 export default {
+  beforeCreate() {
+    // 页面一上来，判断是否有token
+    var token = sessionStorage.getItem('token');
+    if (!token) {
+      this.$message.warning('请先登录');
+      this.$router.push('/login');
+    }
+  },
   methods: {
     handleLogout() {
       // 清除token
