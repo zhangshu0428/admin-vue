@@ -33,19 +33,20 @@ export default {
       axios
         .post('http://localhost:8888/api/private/v1/login', this.formData)
         .then((response) => {
-          console.log(response);
+          // console.log(response);
           var status = response.data.meta.status;
           var msg = response.data.meta.msg;
-          console.log(status);
+          // console.log(status);
           if (status === 200) {
             // 成功
             // 提示
             this.$message.success(msg);
             // 获取token，存储到本地
             var token = response.data.data.token;
-            sessionStorage.setItem('token',token);
+            sessionStorage.setItem('token', token);
             // console.log(token);
             // 跳转,新建home组件，配置路由
+            this.$router.push('/');
           } else {
             // 失败
             this.$message.error(msg);
