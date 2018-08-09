@@ -8,10 +8,10 @@
             <el-form-item label="密码">
                 <el-input v-model="formData.password"></el-input>
             </el-form-item>
+            <el-form-item>
+              <el-button class="btn" type="primary">登录</el-button>
+             </el-form-item>
         </el-form>
-        <el-form-item>
-          <el-button class="btn" type="primary">登录</el-button>
-        </el-form-item>
       </div>
     </div>
 </template>
