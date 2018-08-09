@@ -14,8 +14,80 @@
             </el-row>
         </el-header>
         <el-container>
-            <el-aside width="200px" class="aside">Aside</el-aside>
-            <el-main class="main">Main</el-main>
+            <el-aside width="200px" class="aside">
+              <el-menu
+                unique-opened
+                router
+                default-active="/users"
+                class="el-menu-vertical-demo">
+                <el-submenu index="1">
+                  <template slot="title">
+                    <i class="el-icon-location"></i>
+                    <span>用户管理</span>
+                  </template>
+                    <el-menu-item index="/users">
+                      <i class="el-icon-menu"></i>
+                      <span>用户列表</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="2">
+                  <template slot="title">
+                    <i class="el-icon-location"></i>
+                    <span>权限管理</span>
+                  </template>
+                    <el-menu-item index="/roles">
+                      <i class="el-icon-menu"></i>
+                      <span>角色列表</span>
+                    </el-menu-item>
+                    <el-menu-item index="/rights">
+                      <i class="el-icon-menu"></i>
+                      <span>权限列表</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="3">
+                  <template slot="title">
+                    <i class="el-icon-location"></i>
+                    <span>商品管理</span>
+                  </template>
+                    <el-menu-item index="/goods">
+                      <i class="el-icon-menu"></i>
+                      <span>商品列表</span>
+                    </el-menu-item>
+                    <el-menu-item index="/categoriesParams">
+                      <i class="el-icon-menu"></i>
+                      <span>分类参数</span>
+                    </el-menu-item>
+                    <el-menu-item index="/categories">
+                      <i class="el-icon-menu"></i>
+                      <span>商品分类</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="4">
+                  <template slot="title">
+                    <i class="el-icon-location"></i>
+                    <span>订单管理</span>
+                  </template>
+                    <el-menu-item index="1-4-1">
+                      <i class="el-icon-menu"></i>
+                      <span>订单列表</span>
+                    </el-menu-item>
+                </el-submenu>
+                <el-submenu index="5">
+                  <template slot="title">
+                    <i class="el-icon-location"></i>
+                    <span>数据统计</span>
+                  </template>
+                    <el-menu-item index="1-4-1">
+                      <i class="el-icon-menu"></i>
+                      <span>数据列表</span>
+                    </el-menu-item>
+                </el-submenu>
+              </el-menu>
+            </el-aside>
+            <el-main class="main">
+              <!-- 当匹配到导航栏的路由时，显示不同的组件 -->
+              <router-view></router-view>
+            </el-main>
         </el-container>
     </el-container>
 </template>
@@ -35,7 +107,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
     .home-wrap {
        height: 100%;
     }
@@ -58,6 +130,7 @@ export default {
     }
     .aside {
         background-color: #d3dce6;
+        height: 100%;
     }
     .main {
         background-color: #e9eef3;
