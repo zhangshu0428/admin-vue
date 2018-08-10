@@ -71,6 +71,19 @@
              </template>
           </el-table-column>
         </el-table>
+        <!-- 分页
+        current-page：当前页数
+         -->
+        <el-pagination
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
+          :current-page="pagenum"
+          :page-sizes="[2, 4, 6, 8]"
+          :page-size="pagesize"
+          :pager-count="9"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="count">
+        </el-pagination>
     </div>
 </template>
 
@@ -82,7 +95,10 @@ export default {
         {
 
         }
-      ]
+      ],
+      pagenum: 1,
+      pagesize: 2,
+      count: 0
     };
   },
   created() {
@@ -94,15 +110,27 @@ export default {
       // 发送请求之前，需要认证token
       var token = sessionStorage.getItem('token');
       this.$http.defaults.headers.common['Authorization'] = token;
-      var response = await this.$http.get('users?pagenum=1&pagesize=10');
-      console.log(response);
+      var response = await this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}`);
+      // console.log(response);
       // 获取状态码和信息
       var { meta: { status, msg } } = response.data;
       if (status === 200) {
+        // 请求成功后获取总条数
+        this.count = response.data.data.total;
         this.tableData = response.data.data.users;
       } else {
         this.$message.error(msg);
       }
+    },
+    handleSizeChange(val) {
+      // 当每页显示的条数变化时，给pagesize赋值,发送请求
+      this.pagesize = val;
+      this.usersList();
+    },
+    handleCurrentChange(val) {
+      // 当前页数变化时，给pagenum赋值,发送请求
+      this.pagenum = val;
+      this.usersList();
     }
   }
 };
