@@ -84,7 +84,12 @@
                   plain
                   @click="handleDelete(scope.row.id)"
                   size="mini"></el-button>
-                  <el-button type="success" icon="el-icon-check" plain size="mini"></el-button>
+                  <el-button
+                  type="success"
+                  icon="el-icon-check"
+                  plain
+                  @click="openRoleDialog(scope.row)"
+                  size="mini"></el-button>
                 </el-row>
              </template>
           </el-table-column>
@@ -123,9 +128,9 @@
         </el-dialog>
         <!-- 编辑用户的对话框 -->
         <el-dialog
-        title="修改用户"
-        @close="closeEditDialog"
-        :visible.sync="editUserDialogFormVisible">
+          title="修改用户"
+          @close="closeEditDialog"
+          :visible.sync="editUserDialogFormVisible">
           <el-form :model="form" label-width="80px" ref="editForm">
             <el-form-item label="用户名称">
               <el-input v-model="form.username" auto-complete="off" disabled></el-input>
@@ -142,6 +147,28 @@
             <el-button type="primary" @click="handleEditDetails">确 定</el-button>
           </div>
         </el-dialog>
+        <!-- 角色分配 -->
+        <el-dialog title="分配角色" :visible.sync="setRoleDialogFormVisible">
+        <el-form label-width="100px">
+          <el-form-item label="当前用户">
+              {{ currentUserName }}
+          </el-form-item>
+          <el-form-item label="请选择角色">
+            <el-select v-model="currentRoleId">
+              <el-option label="请选择" value="-1" disabled></el-option>
+              <el-option
+              v-for="item in roles" :key="item.id"
+              :label="item.roleName"
+              :value="item.id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+        </el-form>
+        <div slot="footer" class="dialog-footer">
+          <el-button @click="setRoleDialogFormVisible = false">取 消</el-button>
+          <el-button type="primary" @click="setRoleDialogFormVisible = false">确 定</el-button>
+        </div>
+      </el-dialog>
     </div>
 </template>
 
@@ -165,6 +192,8 @@ export default {
       addUserDialogFormVisible: false,
       // 编辑用户的对话框
       editUserDialogFormVisible: false,
+      // 分配角色的对话框
+      setRoleDialogFormVisible: false,
       // 验证表单
       rules: {
         username: [
@@ -175,7 +204,11 @@ export default {
           { required: true, message: '请输入密码', trigger: 'blur' },
           { min: 3, max: 6, message: '长度在 3 到 6 个字符', trigger: 'blur' }
         ]
-      }
+      },
+      currentUserName: '',
+      currentUserId: '',
+      currentRoleId: '-1',
+      roles: []
     };
   },
   created() {
@@ -323,6 +356,23 @@ export default {
       const { meta: { status, msg } } = response.data;
       if (status === 200) {
         this.$message.success(msg);
+      } else {
+        this.$message.error(msg);
+      }
+    },
+    // 点击分配角色按钮触发的事件
+    async openRoleDialog(user) {
+      this.setRoleDialogFormVisible = true;
+      // 获取用户id和用户名
+      this.currentUserName = user.username;
+      this.currentUserId = user.id;
+      // 发送请求，获取角色id
+      const response = await this.$http.get(`roles`);
+      console.log(response);
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        // 成功后，渲染页面
+        this.roles = response.data.data;
       } else {
         this.$message.error(msg);
       }
