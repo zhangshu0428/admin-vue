@@ -61,6 +61,7 @@
             <template slot-scope="scope">
               <!-- {{ scope.row }} -->
                <el-switch
+                @change="handleStateChange(scope.row)"
                 v-model="scope.row.mg_state"
                 active-color="#13ce66"
                 inactive-color="#ff4949">
@@ -314,6 +315,17 @@ export default {
           message: '已取消删除'
         });
       });
+    },
+    // 点击切换开关触发的事件
+    async handleStateChange(user) {
+      // 发送请求
+      const response = await this.$http.put(`users/${user.id}/state/${user.mg_state}`);
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.$message.success(msg);
+      } else {
+        this.$message.error(msg);
+      }
     }
   }
 };
