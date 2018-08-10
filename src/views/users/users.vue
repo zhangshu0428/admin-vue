@@ -71,7 +71,12 @@
             label="操作">
              <template slot-scope="scope">
                 <el-row>
-                  <el-button type="primary" icon="el-icon-edit" plain size="mini"></el-button>
+                  <el-button
+                  type="primary"
+                  icon="el-icon-edit"
+                  plain
+                  @click="openEditDialog(scope.row)"
+                  size="mini"></el-button>
                   <el-button type="success" icon="el-icon-check" plain size="mini"></el-button>
                   <el-button type="danger" icon="el-icon-delete" plain size="mini"></el-button>
                 </el-row>
@@ -90,12 +95,12 @@
           :total="count">
         </el-pagination>
         <!-- 添加内容的弹出框 -->
-        <el-dialog title="添加用户" :visible="addUserDialogFormVisible">
-          <el-form :model="form" label-width="80px">
-            <el-form-item label="用户名称">
+        <el-dialog title="添加用户" :visible.sync="addUserDialogFormVisible">
+          <el-form :model="form" label-width="80px" :rules="rules" ref="addForm">
+            <el-form-item label="用户名称" prop="username">
               <el-input v-model="form.username" auto-complete="off"></el-input>
             </el-form-item>
-            <el-form-item label="密码">
+            <el-form-item label="密码" prop="password">
               <el-input type="password" v-model="form.password" auto-complete="off"></el-input>
             </el-form-item>
             <el-form-item label="邮箱">
@@ -106,10 +111,28 @@
             </el-form-item>
           </el-form>
           <div slot="footer" class="dialog-footer">
-            <el-button @click="addUserDialogFormVisible = false">取 消</el-button>
+            <el-button @click="handleCancel">取 消</el-button>
             <el-button type="primary" @click="handleAddDetails">确 定</el-button>
           </div>
-      </el-dialog>
+        </el-dialog>
+        <!-- 编辑用户的对话框 -->
+        <el-dialog title="修改用户" :visible.sync="editUserDialogFormVisible">
+          <el-form :model="form" label-width="80px" ref="editForm">
+            <el-form-item label="用户名称">
+              <el-input v-model="form.username" auto-complete="off" disabled></el-input>
+            </el-form-item>
+            <el-form-item label="邮箱">
+              <el-input v-model="form.email" auto-complete="off"></el-input>
+            </el-form-item>
+            <el-form-item label="电话">
+              <el-input v-model="form.mobile" auto-complete="off"></el-input>
+            </el-form-item>
+          </el-form>
+          <div slot="footer" class="dialog-footer">
+            <el-button @click="editUserDialogFormVisible = false">取 消</el-button>
+            <el-button type="primary" @click="handleEditDetails">确 定</el-button>
+          </div>
+        </el-dialog>
     </div>
 </template>
 
@@ -133,7 +156,21 @@ export default {
         email: '',
         mobile: ''
       },
-      addUserDialogFormVisible: false
+      // 添加用户的对话框
+      addUserDialogFormVisible: false,
+      // 编辑用户的对话框
+      editUserDialogFormVisible: false,
+      // 验证表单
+      rules: {
+        username: [
+          { required: true, message: '请输入用户名', trigger: 'blur' },
+          { min: 3, max: 5, message: '长度在 3 到 5 个字符', trigger: 'blur' }
+        ],
+        password: [
+          { required: true, message: '请输入密码', trigger: 'blur' },
+          { min: 3, max: 6, message: '长度在 3 到 6 个字符', trigger: 'blur' }
+        ]
+      }
     };
   },
   created() {
@@ -180,13 +217,60 @@ export default {
     },
     // 点击确定，添加用户的表单
     async handleAddDetails() {
-    // 发送请求，提示 对话框关闭，重新渲染页面
-      var response = await this.$http.post('users', this.form);
-      console.log(response);
-      const { data: { meta: { status, msg } } } = response;
-      if (status === 201) {
+      // 先获取表单，进行验证
+      this.$refs.addForm.validate(async (valid) => {
+        if (valid) {
+          // 验证成功，发送请求，注意await的用法
+          // 发送请求，提示 对话框关闭，重新渲染页面
+          var response = await this.$http.post('users', this.form);
+          console.log(response);
+          const { data: { meta: { status, msg } } } = response;
+          if (status === 201) {
+            this.$message.success(msg);
+            this.addUserDialogFormVisible = false;
+            // 重置表单
+            this.$refs.addForm.resetFields();
+            this.usersList();
+          } else {
+            this.$message.error(msg);
+          }
+        } else {
+          this.$message.warning('验证失败');
+        }
+      });
+    },
+    // 点击取消，对话框消失，重置表单内容
+    handleCancel() {
+      this.addUserDialogFormVisible = false;
+      this.$refs.addForm.resetFields();
+    },
+    // 点击编辑按钮
+    openEditDialog(user) {
+      // 弹出对话框
+      this.editUserDialogFormVisible = true;
+      // 发送请求，获取该行的数据
+      console.log(user);
+      this.form.username = user.username;
+      this.form.email = user.email;
+      this.form.mobile = user.mobile;
+      // 将id 存入表单中
+      this.form.id = user.id;
+    },
+    // 点击编辑的确定按钮
+    async handleEditDetails() {
+      // 发送请求
+      const response = await this.$http.put(`users/${this.form.id}`, {
+        email: this.form.email,
+        mobile: this.form.mobile
+      });
+      // 判断
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        // 提示
         this.$message.success(msg);
-        this.addUserDialogFormVisible = false;
+        // 关闭对话框
+        this.editUserDialogFormVisible = false;
+        // 渲染页面
         this.usersList();
       } else {
         this.$message.error(msg);
