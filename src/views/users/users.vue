@@ -116,7 +116,10 @@
           </div>
         </el-dialog>
         <!-- 编辑用户的对话框 -->
-        <el-dialog title="修改用户" :visible.sync="editUserDialogFormVisible">
+        <el-dialog
+        title="修改用户"
+        @close="closeEditDialog"
+        :visible.sync="editUserDialogFormVisible">
           <el-form :model="form" label-width="80px" ref="editForm">
             <el-form-item label="用户名称">
               <el-input v-model="form.username" auto-complete="off" disabled></el-input>
@@ -274,6 +277,13 @@ export default {
         this.usersList();
       } else {
         this.$message.error(msg);
+      }
+    },
+    // 关闭对话框
+    closeEditDialog() {
+      // 清除表单数据
+      for (var k in this.form) {
+        this.form[k] = '';
       }
     }
   }
