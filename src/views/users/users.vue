@@ -77,8 +77,13 @@
                   plain
                   @click="openEditDialog(scope.row)"
                   size="mini"></el-button>
+                  <el-button
+                  type="danger"
+                  icon="el-icon-delete"
+                  plain
+                  @click="handleDelete(scope.row.id)"
+                  size="mini"></el-button>
                   <el-button type="success" icon="el-icon-check" plain size="mini"></el-button>
-                  <el-button type="danger" icon="el-icon-delete" plain size="mini"></el-button>
                 </el-row>
              </template>
           </el-table-column>
@@ -143,13 +148,9 @@
 export default {
   data() {
     return {
-      tableData: [
-        {
-
-        }
-      ],
+      tableData: [],
       pagenum: 1,
-      pagesize: 2,
+      pagesize: 4,
       count: 0,
       searchText: '',
       // 添加用户的弹出框
@@ -285,6 +286,34 @@ export default {
       for (var k in this.form) {
         this.form[k] = '';
       }
+    },
+    // 点击删除按钮
+    async handleDelete(id) {
+      // 弹出对话框
+      this.$confirm('确认删除该用户?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        // 点击了确认按钮， 发送删除请求
+        const response = await this.$http.delete(`users/${id}`);
+        const { meta: { status, msg } } = response.data;
+        if (status === 200) {
+          this.$message.success(msg);
+          // 删除后，如果某一页没有数据了，跳转到前一页
+          if (this.tableData.length === 1 && this.pagenum !== 1) {
+            this.pagenum--;
+          }
+          // 重新渲染
+          this.usersList();
+        }
+      }).catch(() => {
+        // 点击了取消按钮
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     }
   }
 };
