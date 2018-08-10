@@ -17,7 +17,6 @@
 </template>
 
 <script>
-import axios from 'axios';
 export default {
   data() {
     return {
@@ -30,8 +29,8 @@ export default {
   methods: {
     handleLogin() {
       // 使用async函数和变量赋值
-      axios
-        .post('http://localhost:8888/api/private/v1/login', this.formData)
+      this.$http
+        .post('login', this.formData)
         .then((response) => {
           // console.log(response);
           var status = response.data.meta.status;
