@@ -107,7 +107,7 @@
           </el-form>
           <div slot="footer" class="dialog-footer">
             <el-button @click="addUserDialogFormVisible = false">取 消</el-button>
-            <el-button type="primary" @click="addUserDialogFormVisible = false">确 定</el-button>
+            <el-button type="primary" @click="handleAddDetails">确 定</el-button>
           </div>
       </el-dialog>
     </div>
@@ -177,6 +177,20 @@ export default {
     handleAdd() {
       // 弹出对话框
       this.addUserDialogFormVisible = true;
+    },
+    // 点击确定，添加用户的表单
+    async handleAddDetails() {
+    // 发送请求，提示 对话框关闭，重新渲染页面
+      var response = await this.$http.post('users', this.form);
+      console.log(response);
+      const { data: { meta: { status, msg } } } = response;
+      if (status === 201) {
+        this.$message.success(msg);
+        this.addUserDialogFormVisible = false;
+        this.usersList();
+      } else {
+        this.$message.error(msg);
+      }
     }
   }
 };
