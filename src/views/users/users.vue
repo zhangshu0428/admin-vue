@@ -24,6 +24,7 @@
          </el-col>
         </el-row>
         <el-table
+          v-loading="loading"
           stripe
           border
           :data="tableData"
@@ -189,6 +190,7 @@ export default {
         email: '',
         mobile: ''
       },
+      loading: true,
       // 添加用户的对话框
       addUserDialogFormVisible: false,
       // 编辑用户的对话框
@@ -222,6 +224,8 @@ export default {
       // var token = sessionStorage.getItem('token');
       // this.$http.defaults.headers.common['Authorization'] = token;
       var response = await this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}&query=${this.searchText}`);
+      // 数据加载完后，动画隐藏
+      this.loading = false;
       // console.log(response);
       // 获取状态码和信息
       var { meta: { status, msg } } = response.data;

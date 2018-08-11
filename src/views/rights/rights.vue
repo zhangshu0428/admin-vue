@@ -9,6 +9,7 @@
     <my-breadcrumb level1="权限管理" level2="权限列表"></my-breadcrumb>
     <!-- 表格 -->
     <el-table
+      v-loading="loading"
       stripe
       border
       :data="tableData"
@@ -44,7 +45,8 @@
 export default {
   data() {
     return {
-      tableData: []
+      tableData: [],
+      loading: true
     };
   },
   created() {
@@ -54,6 +56,7 @@ export default {
     // 获取权限列表
     async rightslist() {
       const response = await this.$http.get('rights/list');
+      this.loading = false;
       const { meta: { status, msg } } = response.data;
       if (status === 200) {
         this.tableData = response.data.data;
