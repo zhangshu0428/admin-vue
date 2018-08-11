@@ -20,7 +20,7 @@
             <el-row v-for="level1 in scope.row.children" :key="level1.id" class="level1">
               <el-col :span="4">
                 <!-- 放置一级权限 -->
-                <el-tag closable type="success">
+                <el-tag closable type="success" @close="handleDeleteRight(scope.row, level1.id)">
                   {{ level1.authName }}
                 </el-tag>
               </el-col>
@@ -29,13 +29,17 @@
                 <el-row v-for="level2 in level1.children" :key="level2.id">
                   <el-col :span="4">
                     <!-- 放置二级权限 -->
-                    <el-tag closable type="warning">
+                    <el-tag closable type="warning" @close="handleDeleteRight(scope.row, level2.id)">
                       {{ level2.authName }}
                     </el-tag>
                   </el-col>
                   <el-col :span="20">
                     <!-- 放置三级权限 -->
-                    <el-tag closable v-for="level3 in level2.children" :key="level3.id" class="level3">
+                    <el-tag
+                    closable
+                    v-for="level3 in level2.children" :key="level3.id"
+                    @close="handleDeleteRight(scope.row, level3.id)"
+                    class="level3">
                       {{ level3.authName }}
                     </el-tag>
                   </el-col>
@@ -139,6 +143,21 @@ export default {
       const { meta: { status, msg } } = response.data;
       if (status === 200) {
         this.tableData = response.data.data;
+      } else {
+        this.$message.error(msg);
+      }
+    },
+    // 处理关闭权限标签
+    async handleDeleteRight(role, rightId) {
+      const response = await this.$http.delete(`roles/${role.id}/rights/${rightId}`);
+      console.log(response);
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.$message.success(msg);
+        // 重新渲染,直接加载表格用户体验不好，每次都关闭权限标签，所以要重新渲染权限标签
+        // 需要给scope.row.children重新赋值从后台获取的数据
+        // this.rolesList();
+        role.children = response.data.data;
       } else {
         this.$message.error(msg);
       }
