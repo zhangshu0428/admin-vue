@@ -26,7 +26,7 @@
               </el-col>
               <el-col :span="20">
                 <!-- 放置二级权限及三级权限的包裹 -->
-                <el-row v-for="level2 in level1.children" :key="level2.id" class="level2">
+                <el-row v-for="level2 in level1.children" :key="level2.id">
                   <el-col :span="4">
                     <!-- 放置二级权限 -->
                     <el-tag closable type="warning">
@@ -74,6 +74,7 @@
             plain
             size="mini"></el-button>
             <el-button
+            @click="handleRenderTree"
             type="success"
             icon="el-icon-check"
             plain
@@ -82,6 +83,26 @@
         </template>
       </el-table-column>
     </el-table>
+    <!-- 设置权限的对话框 -->
+    <el-dialog
+      title="权限分配"
+      :visible.sync="openSetRightsDialogVisible"
+      width="60%">
+      <!-- 显示树状权限信息 -->
+      <el-tree
+        :data="treeData"
+        show-checkbox
+        node-key="id"
+        default-expand-all
+        :default-expanded-keys="[2, 3]"
+        :default-checked-keys="[5]"
+        :props="defaultProps">
+      </el-tree>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="openSetRightsDialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="openSetRightsDialogVisible = false">确 定</el-button>
+      </span>
+    </el-dialog>
   </el-card>
 </template>
 
@@ -90,7 +111,15 @@ export default {
   data() {
     return {
       tableData: [],
-      loading: true
+      loading: true,
+      openSetRightsDialogVisible: false,
+      treeData: [],
+      defaultProps: {
+        // 指定节点标签是节点对象的某个属性值
+        label: 'authName',
+        // 指定子树是节点对象的某个属性值
+        children: 'children'
+      }
     };
   },
   created() {
@@ -109,13 +138,24 @@ export default {
       } else {
         this.$message.error(msg);
       }
+    },
+    async handleRenderTree() {
+      this.openSetRightsDialogVisible = true;
+      // 发送请求，获取权限
+      const response = await this.$http.get('rights/tree');
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.treeData = response.data.data;
+      } else {
+        this.$message.error(msg);
+      }
     }
   }
 };
 </script>
 
 <style>
-.level1,.level2,.level3 {
+.level1,.level3 {
   margin-bottom: 10px;
 }
 .level3 {
