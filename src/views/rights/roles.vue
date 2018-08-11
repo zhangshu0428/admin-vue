@@ -74,7 +74,7 @@
             plain
             size="mini"></el-button>
             <el-button
-            @click="handleRenderTree"
+            @click="handleRenderTree(scope.row)"
             type="success"
             icon="el-icon-check"
             plain
@@ -95,7 +95,7 @@
         node-key="id"
         default-expand-all
         :default-expanded-keys="[2, 3]"
-        :default-checked-keys="[5]"
+        :default-checked-keys="defaultChecked"
         :props="defaultProps">
       </el-tree>
       <span slot="footer" class="dialog-footer">
@@ -119,17 +119,19 @@ export default {
         label: 'authName',
         // 指定子树是节点对象的某个属性值
         children: 'children'
-      }
+      },
+      // 默认选中，放置id
+      defaultChecked: []
     };
   },
   created() {
     this.rolesList();
   },
   methods: {
+    // 发送获取角色列表的请求
     async rolesList() {
-      // 发送获取角色列表的请求
       const response = await this.$http.get('roles');
-      console.log(response);
+      // console.log(response);
       // 数据加载完后，动画隐藏
       this.loading = false;
       const { meta: { status, msg } } = response.data;
@@ -139,16 +141,29 @@ export default {
         this.$message.error(msg);
       }
     },
-    async handleRenderTree() {
+    // 发送请求，获取权限
+    async handleRenderTree(roles) {
+      // roles 是该行用户的所有详细信息，包括权限信息
       this.openSetRightsDialogVisible = true;
+      this.defaultChecked = [];
       // 发送请求，获取权限
       const response = await this.$http.get('rights/tree');
       const { meta: { status, msg } } = response.data;
       if (status === 200) {
+        // 显示所有的树状结构
         this.treeData = response.data.data;
       } else {
         this.$message.error(msg);
       }
+      // 要想默认选中所对应的权限，只需要获取第三级权限的id,放到defaultChecked中
+      // 设置完成后，会改变全局的defaultChecked的值，所以要先使该数组的长度为0
+      roles.children.forEach((itemOne) => {
+        itemOne.children.forEach((itemTwo) => {
+          itemTwo.children.forEach((itemThree) => {
+            this.defaultChecked.push(itemThree.id);
+          });
+        });
+      });
     }
   }
 };
