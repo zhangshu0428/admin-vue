@@ -218,8 +218,8 @@ export default {
   methods: {
     async usersList() {
       // 发送请求之前，需要认证token
-      var token = sessionStorage.getItem('token');
-      this.$http.defaults.headers.common['Authorization'] = token;
+      // var token = sessionStorage.getItem('token');
+      // this.$http.defaults.headers.common['Authorization'] = token;
       var response = await this.$http.get(`users?pagenum=${this.pagenum}&pagesize=${this.pagesize}&query=${this.searchText}`);
       // console.log(response);
       // 获取状态码和信息
