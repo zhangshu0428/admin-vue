@@ -8,6 +8,7 @@ import 'element-ui/lib/theme-chalk/index.css';
 import '@/assets/css/index.css';
 import moment from 'moment';
 import myAxios from '@/plugins/myAxios';
+import MyBreadcrumb from '@/components/MyBreadcrumb';
 
 Vue.config.productionTip = false;
 Vue.use(ElementUI);
@@ -16,6 +17,8 @@ Vue.use(myAxios);
 Vue.filter('fmtDate', (value, fmtString) => {
   return moment(value).format(fmtString);
 });
+// 创建全局面包屑组件
+Vue.component(MyBreadcrumb.name, MyBreadcrumb);
 /* eslint-disable no-new */
 new Vue({
   el: '#app',

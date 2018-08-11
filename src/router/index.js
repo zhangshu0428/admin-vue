@@ -4,6 +4,7 @@ import login from '@/views/login';
 import home from '@/views/home';
 import users from '@/views/users/users';
 import rights from '@/views/rights/rights';
+import roles from '@/views/rights/roles';
 
 Vue.use(Router);
 
@@ -16,7 +17,8 @@ export default new Router({
       component: home,
       children: [
         { name: 'users', path: '/users', component: users },
-        { name: 'rights', path: '/rights', component: rights }
+        { name: 'rights', path: '/rights', component: rights },
+        { name: 'roles', path: '/roles', component: roles }
       ]
     }
   ]
