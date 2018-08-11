@@ -18,7 +18,6 @@
               <el-menu
                 unique-opened
                 router
-                default-active="/users"
                 class="el-menu-vertical-demo">
                 <el-submenu index="1">
                   <template slot="title">

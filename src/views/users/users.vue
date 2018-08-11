@@ -155,7 +155,7 @@
           </el-form-item>
           <el-form-item label="请选择角色">
             <el-select v-model="currentRoleId">
-              <el-option label="请选择" value="-1" disabled></el-option>
+              <el-option label="请选择" :value="-1" disabled></el-option>
               <el-option
               v-for="item in roles" :key="item.id"
               :label="item.roleName"
@@ -166,7 +166,7 @@
         </el-form>
         <div slot="footer" class="dialog-footer">
           <el-button @click="setRoleDialogFormVisible = false">取 消</el-button>
-          <el-button type="primary" @click="setRoleDialogFormVisible = false">确 定</el-button>
+          <el-button type="primary" @click="handleSetRole">确 定</el-button>
         </div>
       </el-dialog>
     </div>
@@ -207,7 +207,7 @@ export default {
       },
       currentUserName: '',
       currentUserId: '',
-      currentRoleId: '-1',
+      currentRoleId: -1,
       roles: []
     };
   },
@@ -368,11 +368,31 @@ export default {
       this.currentUserId = user.id;
       // 发送请求，获取角色id
       const response = await this.$http.get(`roles`);
-      console.log(response);
-      const { meta: { status, msg } } = response.data;
+      // console.log(response);
+      var { meta: { status, msg } } = response.data;
       if (status === 200) {
         // 成功后，渲染页面
         this.roles = response.data.data;
+      } else {
+        this.$message.error(msg);
+      };
+      // 发送请求，获取当前行用户的角色信息
+      const roleResponse = await this.$http.get(`users/${user.id}`);
+      // console.log(roleResponse);
+      // 成功后，将该用户的roleid赋值给下拉框绑定的变量
+      this.currentRoleId = roleResponse.data.data.rid;
+      // console.log(this.currentRoleId);
+    },
+    async handleSetRole() {
+      // 关闭弹窗
+      this.setRoleDialogFormVisible = false;
+      // 发送请求
+      const response = await this.$http.put(`users/${this.currentUserId}/role`, {
+        rid: this.currentRoleId
+      });
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.$message.success(msg);
       } else {
         this.$message.error(msg);
       }
