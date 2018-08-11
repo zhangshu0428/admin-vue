@@ -90,17 +90,17 @@
       width="60%">
       <!-- 显示树状权限信息 -->
       <el-tree
+        ref="tree"
         :data="treeData"
         show-checkbox
         node-key="id"
         default-expand-all
-        :default-expanded-keys="[2, 3]"
         :default-checked-keys="defaultChecked"
         :props="defaultProps">
       </el-tree>
       <span slot="footer" class="dialog-footer">
         <el-button @click="openSetRightsDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="openSetRightsDialogVisible = false">确 定</el-button>
+        <el-button type="primary" @click="handleSetRights">确 定</el-button>
       </span>
     </el-dialog>
   </el-card>
@@ -121,7 +121,9 @@ export default {
         children: 'children'
       },
       // 默认选中，放置id
-      defaultChecked: []
+      defaultChecked: [],
+      // 当前角色id
+      currentRoleId: -1
     };
   },
   created() {
@@ -144,6 +146,8 @@ export default {
     // 发送请求，获取权限
     async handleRenderTree(roles) {
       // roles 是该行用户的所有详细信息，包括权限信息
+      // 后期添加：获取当前角色的id
+      this.currentRoleId = roles.id;
       this.openSetRightsDialogVisible = true;
       this.defaultChecked = [];
       // 发送请求，获取权限
@@ -164,6 +168,28 @@ export default {
           });
         });
       });
+    },
+    // 点击确定，处理权限更改
+    async handleSetRights() {
+      this.openSetRightsDialogVisible = false;
+      // 需要的参数有角色id(currentRole) 和 权限id的列表，以逗号隔开
+      // 获取默认选中节点的id,调用tree的方法
+      const FullChecked = this.$refs.tree.getCheckedKeys();
+      const HalfChecked = this.$refs.tree.getHalfCheckedKeys();
+      // console.log(FullChecked, HalfChecked);
+      const arr = [...FullChecked, ...HalfChecked];
+      // 参数获取完毕，发送请求
+      const response = await this.$http.post(`roles/${this.currentRoleId}/rights`, {
+        rids: arr.join(',')
+      });
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.$message.success(msg);
+        // 重新渲染表格
+        this.rolesList();
+      } else {
+        this.$message.error(msg);
+      }
     }
   }
 };
