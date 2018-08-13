@@ -58,6 +58,7 @@
               plain
               size="mini"></el-button>
               <el-button
+              @click="handleDelete(scope.row.cat_id)"
               type="danger"
               icon="el-icon-delete"
               plain
@@ -229,6 +230,34 @@ export default {
       } else {
         this.$message.error(msg);
       }
+    },
+    // 删除分类
+    async handleDelete(catId) {
+      // 弹出确认对话框
+      this.$confirm('确认删除该分类?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        // 点击了确认按钮， 发送删除请求
+        const response = await this.$http.delete(`categories/${catId}`);
+        const { meta: { status, msg } } = response.data;
+        if (status === 200) {
+          this.$message.success(msg);
+          // 删除后，如果某一页没有数据了，跳转到前一页
+          if (this.tableData.length === 1 && this.pagenum !== 1) {
+            this.pagenum--;
+          }
+          // 重新渲染
+          this.categoriesList();
+        }
+      }).catch(() => {
+        // 点击了取消按钮
+        this.$message({
+          type: 'info',
+          message: '已取消删除'
+        });
+      });
     }
   }
 };
