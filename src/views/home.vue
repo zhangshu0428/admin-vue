@@ -1,98 +1,51 @@
 <template>
     <el-container class="home-wrap">
-        <el-header class="header">
-            <el-row>
-                <el-col :span="4">
-                    <img src="@/assets/logo.png">
-                </el-col>
-                <el-col :span="19">
-                    <h3>电商后台管理系统</h3>
-                </el-col>
-                <el-col :span="1" class="logout">
-                    <a href="#" @click.prevent="handleLogout">退出</a>
-                </el-col>
-            </el-row>
-        </el-header>
-        <el-container>
-            <el-aside width="200px" class="aside">
-              <el-menu
-                unique-opened
-                router
-                class="el-menu-vertical-demo">
-                <el-submenu index="1">
-                  <template slot="title">
-                    <i class="el-icon-location"></i>
-                    <span>用户管理</span>
-                  </template>
-                    <el-menu-item index="/users">
-                      <i class="el-icon-menu"></i>
-                      <span>用户列表</span>
-                    </el-menu-item>
-                </el-submenu>
-                <el-submenu index="2">
-                  <template slot="title">
-                    <i class="el-icon-location"></i>
-                    <span>权限管理</span>
-                  </template>
-                    <el-menu-item index="/roles">
-                      <i class="el-icon-menu"></i>
-                      <span>角色列表</span>
-                    </el-menu-item>
-                    <el-menu-item index="/rights">
-                      <i class="el-icon-menu"></i>
-                      <span>权限列表</span>
-                    </el-menu-item>
-                </el-submenu>
-                <el-submenu index="3">
-                  <template slot="title">
-                    <i class="el-icon-location"></i>
-                    <span>商品管理</span>
-                  </template>
-                    <el-menu-item index="/goods">
-                      <i class="el-icon-menu"></i>
-                      <span>商品列表</span>
-                    </el-menu-item>
-                    <el-menu-item index="/categoriesParams">
-                      <i class="el-icon-menu"></i>
-                      <span>分类参数</span>
-                    </el-menu-item>
-                    <el-menu-item index="/categories">
-                      <i class="el-icon-menu"></i>
-                      <span>商品分类</span>
-                    </el-menu-item>
-                </el-submenu>
-                <el-submenu index="4">
-                  <template slot="title">
-                    <i class="el-icon-location"></i>
-                    <span>订单管理</span>
-                  </template>
-                    <el-menu-item index="1-4-1">
-                      <i class="el-icon-menu"></i>
-                      <span>订单列表</span>
-                    </el-menu-item>
-                </el-submenu>
-                <el-submenu index="5">
-                  <template slot="title">
-                    <i class="el-icon-location"></i>
-                    <span>数据统计</span>
-                  </template>
-                    <el-menu-item index="1-4-1">
-                      <i class="el-icon-menu"></i>
-                      <span>数据列表</span>
-                    </el-menu-item>
-                </el-submenu>
-              </el-menu>
-            </el-aside>
-            <el-main class="main">
-              <!-- 当匹配到导航栏的路由时，显示不同的组件 -->
-              <router-view></router-view>
-            </el-main>
-        </el-container>
+      <el-header class="header">
+          <el-row>
+              <el-col :span="4">
+                  <img src="@/assets/logo.png">
+              </el-col>
+              <el-col :span="19">
+                  <h3>电商后台管理系统</h3>
+              </el-col>
+              <el-col :span="1" class="logout">
+                  <a href="#" @click.prevent="handleLogout">退出</a>
+              </el-col>
+          </el-row>
+      </el-header>
+      <el-container>
+        <el-aside width="200px" class="aside">
+          <el-menu
+            unique-opened
+            router
+            class="el-menu-vertical-demo">
+            <el-submenu :index="item.id+''" v-for="item in rights" :key="item.id">
+              <template slot="title">
+                <i class="el-icon-location"></i>
+                <span>{{ item.authName }}</span>
+              </template>
+                <el-menu-item :index="'/'+item1.path" v-for="item1 in item.children" :key="item1.id">
+                  <i class="el-icon-menu"></i>
+                  <span>{{ item1.authName }}</span>
+                </el-menu-item>
+            </el-submenu>
+          </el-menu>
+        </el-aside>
+        <el-main class="main">
+          <!-- 当匹配到导航栏的路由时，显示不同的组件 -->
+          <router-view></router-view>
+        </el-main>
+      </el-container>
     </el-container>
 </template>
 
 <script>
 export default {
+  data() {
+    return {
+      rights: []
+    };
+  },
   beforeCreate() {
     // 页面一上来，判断是否有token
     var token = sessionStorage.getItem('token');
@@ -101,7 +54,17 @@ export default {
       this.$router.push('/login');
     }
   },
+  created() {
+    this.rightAndRole();
+  },
   methods: {
+    // 发送请求，获取权限
+    async rightAndRole() {
+      const response = await this.$http.get('menus');
+      // console.log(response);
+      this.rights = response.data.data;
+      // console.log(this.rights);
+    },
     handleLogout() {
       // 清除token
       sessionStorage.removeItem('token');

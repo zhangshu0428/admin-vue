@@ -5,6 +5,7 @@ import home from '@/views/home';
 import users from '@/views/users/users';
 import rights from '@/views/rights/rights';
 import roles from '@/views/rights/roles';
+import categories from '@/views/goods/categories';
 
 Vue.use(Router);
 
@@ -18,7 +19,8 @@ export default new Router({
       children: [
         { name: 'users', path: '/users', component: users },
         { name: 'rights', path: '/rights', component: rights },
-        { name: 'roles', path: '/roles', component: roles }
+        { name: 'roles', path: '/roles', component: roles },
+        { name: 'categories', path: '/categories', component: categories }
       ]
     }
   ]

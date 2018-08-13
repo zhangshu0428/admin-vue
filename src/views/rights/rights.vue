@@ -56,6 +56,7 @@ export default {
     // 获取权限列表
     async rightslist() {
       const response = await this.$http.get('rights/list');
+      // 数据加载完后，动画隐藏
       this.loading = false;
       const { meta: { status, msg } } = response.data;
       if (status === 200) {
