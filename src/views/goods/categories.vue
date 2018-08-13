@@ -53,6 +53,7 @@
           <template slot-scope="scope">
             <el-row>
               <el-button
+              @click="openEditCatDialog(scope.row)"
               type="primary"
               icon="el-icon-edit"
               plain
@@ -111,6 +112,20 @@
         <el-button type="primary" @click="handleSetAddCat">确 定</el-button>
       </div>
   </el-dialog>
+  <!-- 编辑分类的弹出框 -->
+    <el-dialog title="编辑商品分类" :visible.sync="editCatDialogFormVisible">
+      <el-form
+        :model="form"
+        label-width="80">
+        <el-form-item label="分类名称">
+          <el-input style="width:400px" v-model="form.cat_name" auto-complete="off"></el-input>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editCatDialogFormVisible = false">取 消</el-button>
+        <el-button @click="handleEditCat" type="primary">确 定</el-button>
+      </div>
+  </el-dialog>
   </el-card>
 </template>
 
@@ -145,7 +160,12 @@ export default {
       // 选中分类中的父id
       catIds: [],
       currentaPid: 0,
-      currentaLevel: 0
+      currentaLevel: 0,
+      // 编辑分类的弹出框
+      editCatDialogFormVisible: false,
+      // 点击确定按钮时需要用到的cat_id
+      currentCatId: 0,
+      beforeEditCatInfo: ''
     };
   },
   components: {
@@ -258,6 +278,35 @@ export default {
           message: '已取消删除'
         });
       });
+    },
+    // 点击编辑分类
+    async openEditCatDialog(cat) {
+      // 将点击编辑时的那行的分类信息保存在全局中，方便用户体验那块的更改
+      this.beforeEditCatInfo = cat;
+      // 弹出对话框
+      this.editCatDialogFormVisible = true;
+      // 将cat_id存储，方便点击确定按钮时发送请求
+      this.currentCatId = cat.cat_id;
+      // console.log(this.currentCatId);
+      // 设置点击行的分类名称
+      this.form.cat_name = cat.cat_name;
+    },
+    // 点击编辑分类确定按钮
+    async handleEditCat() {
+      const response = await this.$http.put(`categories/${this.currentCatId}`, {
+        cat_name: this.form.cat_name
+      });
+      // console.log(response);
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.$message.success(msg);
+        this.editCatDialogFormVisible = false;
+        // 直接重新渲染表格，用户体验不好
+        // this.categoriesList();
+        this.beforeEditCatInfo.cat_name = response.data.data.cat_name;
+      } else {
+        this.$message.error(msg);
+      }
     }
   }
 };
