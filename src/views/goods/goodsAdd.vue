@@ -225,7 +225,7 @@ export default {
       // 发送请求前，需要把参数都准备好 goods_cat attrs
       this.form.goods_cat = this.catIds.join(',');
       // 分别获取静态参数和动态参数
-      console.log(this.dynamicParams, this.staticParams);
+      // console.log(this.dynamicParams, this.staticParams);
       // 基于dynamicParams数组生成一个新的数组
       const dynamicArr = this.dynamicParams.map((item) => {
         // 返回一个新数组
@@ -242,14 +242,14 @@ export default {
           'attr_vals': item.attr_vals
         };
       });
-      console.log(dynamicArr, staticArr);
+      // console.log(dynamicArr, staticArr);
       // 合并数组
       this.form.attrs = [...dynamicArr, ...staticArr];
       // 发送请求
       const response = await this.$http.post('goods', this.form);
       // console.log(response);
       const { meta: { status, msg } } = response.data;
-      if (status === 200) {
+      if (status === 201) {
         this.$message.success(msg);
         // 返回商品列表页
         this.$router.push('/goods');
