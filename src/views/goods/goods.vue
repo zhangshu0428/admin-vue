@@ -12,7 +12,10 @@
         slot="append"
         icon="el-icon-search"></el-button>
         </el-input>
-        <el-button type="success" plain>添加商品</el-button>
+        <el-button
+        type="success"
+        plain
+        @click="handleGoodsAdd">添加商品</el-button>
       </el-col>
     </el-row>
     <!-- 表格 -->
@@ -121,6 +124,10 @@ export default {
       // 当前页数变化时，给pagenum赋值,发送请求
       this.pagenum = val;
       this.goodsList();
+    },
+    // 点击添加商品
+    handleGoodsAdd() {
+      this.$router.push('/goods/add');
     }
   }
 };
