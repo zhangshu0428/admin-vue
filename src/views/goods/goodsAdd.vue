@@ -54,28 +54,53 @@
         </el-form-item>
       </el-tab-pane>
       <el-tab-pane label="商品参数">
-        <el-form-item :label="item.attr_name" v-for="item in paramData" :key="item.attr_id">
-          <el-checkbox-group>
+        <el-form-item :label="item.attr_name" v-for="item in dynamicParams" :key="item.attr_id">
+          <el-checkbox-group v-model="item.params">
             <el-checkbox
             :label="param"
             border
             v-for="param in item.params"
-            :key="param"
-            checked>
+            :key="param">
             </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
       </el-tab-pane>
-      <el-tab-pane label="商品属性">商品属性</el-tab-pane>
-      <el-tab-pane label="商品图片">商品图片</el-tab-pane>
-      <el-tab-pane label="商品内容">商品内容</el-tab-pane>
+      <el-tab-pane label="商品属性">
+        <el-form-item :label="staticItem.attr_name" v-for="staticItem in staticParams" :key="staticItem.attr_id">
+          <el-input v-model="staticItem.attr_vals"></el-input>
+        </el-form-item>
+      </el-tab-pane>
+      <el-tab-pane label="商品图片">
+        <!-- 上传图片,不是axios请求，所以地址要完整，并且要携带token -->
+        <el-upload
+          :headers="headers"
+          action="http://localhost:8888/api/private/v1/upload"
+          :on-success="handleSuccess"
+          :on-remove="handleRemove"
+          list-type="picture">
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+      </el-tab-pane>
+      <el-tab-pane label="商品内容">
+        <el-button type="primary" @click="handleSubmitAdd">添加商品</el-button>
+        <!-- 富文本框 -->
+        <quill-editor v-model="form.goods_introduce"></quill-editor>
+      </el-tab-pane>
     </el-tabs>
   </el-form>
   </el-card>
 </template>
 
 <script>
+// 富文本框
+import 'quill/dist/quill.core.css';
+import 'quill/dist/quill.snow.css';
+import 'quill/dist/quill.bubble.css';
+import { quillEditor } from 'vue-quill-editor';
 export default {
+  components: {
+    quillEditor
+  },
   data() {
     return {
       // 表单数据
@@ -83,7 +108,12 @@ export default {
         goods_name: '',
         goods_price: '',
         goods_weight: '',
-        goods_number: ''
+        goods_number: '',
+        goods_introduce: '',
+        goods_cat: '',
+        // 存放临时图片路径对象
+        pics: [],
+        attrs: []
       },
       // 选项卡选中
       active: 0,
@@ -101,8 +131,16 @@ export default {
       },
       // 选中分类中的父id
       catIds: [],
-      // 商品参数的数据
-      paramData: []
+      // 商品动态参数的数据
+      dynamicParams: [],
+      // 商品静态参数的数据
+      staticParams: [],
+      // 请求参数时的sel类型
+      paramType: '',
+      // 上传图片的请求头
+      headers: {
+        Authorization: sessionStorage.getItem('token')
+      }
     };
   },
   created() {
@@ -120,19 +158,26 @@ export default {
           // 提示
           this.$message.error('请选择商品分类');
         } else {
+          // 判断是点击商品参数还是商品属性，以此判断是发动态参数请求还是静态参数请求
+          this.paramType = tab.index === '1' ? 'many' : 'only';
           // 选择了商品分类，发送请求，获取参数数据
-          const response = await this.$http.get(`categories/${this.catIds[2]}/attributes?sel=many`);
+          const response = await this.$http.get(`categories/${this.catIds[2]}/attributes?sel=${this.paramType}`);
           // console.log(response);
           const { meta: { status, msg } } = response.data;
           if (status === 200) {
-            this.paramData = response.data.data;
-            // console.log(this.paramData);
-            // 处理参数类型，把字符串转为数组，动态添加数组
-            this.paramData.map((item) => {
-              const arr = item.attr_vals.length === 0 ? [] : item.attr_vals.split(',');
-              this.$set(item, 'params', arr);
-              // console.log(item);
-            });
+            if (this.paramType === 'many') {
+              this.dynamicParams = response.data.data;
+              // console.log(this.dynamicParams);
+              // 处理参数类型，把字符串转为数组，动态添加数组
+              this.dynamicParams.map((item) => {
+                const arr = item.attr_vals.length === 0 ? [] : item.attr_vals.split(',');
+                this.$set(item, 'params', arr);
+                // console.log(item);
+              });
+            } else if (this.paramType === 'only') {
+              this.staticParams = response.data.data;
+              // console.log(this.staticParams);
+            }
           } else {
             this.$message.error(msg);
           }
@@ -153,6 +198,64 @@ export default {
         // 给出提示，只能选择三级分类
         this.$message.warning('请选择三级分类');
       }
+    },
+    // 处理上传图片
+    // 删除图片
+    handleRemove(file, fileList) {
+      // console.log(file, fileList);
+      // 点击删除图片后，需要把图片从pics数组中删除
+      const index = this.pics.findIndex((item) => {
+        if (item.pic === file.response.data.tmp_path) {
+          return true;
+        }
+      });
+      // console.log(index);
+      this.form.pics.slice(index, 1);
+    },
+    // 图片上传成功
+    handleSuccess(response, file, fileList) {
+      // console.log(response, file, fileList);
+      // 上传成功后，把临时路径存放起来
+      this.form.pics.push({
+        'pic': response.data.tmp_path
+      });
+    },
+    // 点击添加商品
+    async handleSubmitAdd() {
+      // 发送请求前，需要把参数都准备好 goods_cat attrs
+      this.form.goods_cat = this.catIds.join(',');
+      // 分别获取静态参数和动态参数
+      console.log(this.dynamicParams, this.staticParams);
+      // 基于dynamicParams数组生成一个新的数组
+      const dynamicArr = this.dynamicParams.map((item) => {
+        // 返回一个新数组
+        return {
+          'attr_id': item.attr_id,
+          'attr_vals': item.params.join(',')
+        };
+      });
+      // 基于staticParams数组生成一个新的数组
+      const staticArr = this.staticParams.map((item) => {
+        // 返回一个新数组
+        return {
+          'attr_id': item.attr_id,
+          'attr_vals': item.attr_vals
+        };
+      });
+      console.log(dynamicArr, staticArr);
+      // 合并数组
+      this.form.attrs = [...dynamicArr, ...staticArr];
+      // 发送请求
+      const response = await this.$http.post('goods', this.form);
+      // console.log(response);
+      const { meta: { status, msg } } = response.data;
+      if (status === 200) {
+        this.$message.success(msg);
+        // 返回商品列表页
+        this.$router.push('/goods');
+      } else {
+        this.$message.error(msg);
+      }
     }
   }
 };
@@ -167,5 +270,8 @@ export default {
 }
 .el-steps .el-step__title {
   font-size: 12px;
+}
+.ql-editor {
+  height: 300px;
 }
 </style>
