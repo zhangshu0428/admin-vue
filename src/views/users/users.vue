@@ -265,18 +265,12 @@ export default {
         if (valid) {
           // 验证成功，发送请求，注意await的用法
           // 发送请求，提示 对话框关闭，重新渲染页面
-          var response = await this.$http.post('users', this.form);
-          console.log(response);
-          const { data: { meta: { status, msg } } } = response;
-          if (status === 201) {
-            this.$message.success(msg);
-            this.addUserDialogFormVisible = false;
-            // 重置表单
-            this.$refs.addForm.resetFields();
-            this.usersList();
-          } else {
-            this.$message.error(msg);
-          }
+          await this.$http.post('users', this.form);
+          // console.log(response);
+          this.addUserDialogFormVisible = false;
+          // 重置表单
+          this.$refs.addForm.resetFields();
+          this.usersList();
         } else {
           this.$message.warning('验证失败');
         }

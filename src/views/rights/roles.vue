@@ -140,17 +140,11 @@ export default {
       // console.log(response);
       // 数据加载完后，动画隐藏
       this.loading = false;
-      const { meta: { status, msg } } = response.data;
-      if (status === 200) {
-        this.tableData = response.data.data;
-      } else {
-        this.$message.error(msg);
-      }
+      this.tableData = response.data.data;
     },
     // 处理关闭权限标签
     async handleDeleteRight(role, rightId) {
       const response = await this.$http.delete(`roles/${role.id}/rights/${rightId}`);
-      console.log(response);
       const { meta: { status, msg } } = response.data;
       if (status === 200) {
         this.$message.success(msg);
