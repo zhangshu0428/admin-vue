@@ -10,6 +10,7 @@ import goods from '@/views/goods/goods';
 import goodsAdd from '@/views/goods/goodsAdd';
 import params from '@/views/goods/params';
 import orders from '@/views/orders/orders';
+import reports from '@/views/reports/reports';
 
 Vue.use(Router);
 
@@ -28,7 +29,8 @@ export default new Router({
         { name: 'goods', path: '/goods', component: goods },
         { name: 'goodsAdd', path: '/goods/add', component: goodsAdd },
         { name: 'params', path: '/params', component: params },
-        { name: 'orders', path: '/orders', component: orders }
+        { name: 'orders', path: '/orders', component: orders },
+        { name: 'reports', path: '/reports', component: reports }
       ]
     }
   ]
